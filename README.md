@@ -1,2 +1,2 @@
 # std
-standard API output and input parameters 
+standard API error, output and input parameters 
