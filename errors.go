@@ -8,8 +8,6 @@ type FieldError struct {
 
 var DefaultErrorStatusCode = 500
 
-var OK = Error{}
-
 // Error i18n error
 type Error struct {
 	statusCode  int
