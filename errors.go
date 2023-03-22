@@ -71,8 +71,8 @@ func (s *Error) FieldErrors() []FieldError {
 	return s.fieldErrors
 }
 
-func (s *Error) AddFieldError(field, key string, params ...string) *Error {
-	s.fieldErrors = append(s.fieldErrors, FieldError{Field: field, Key: key, Params: s.params})
+func (s *Error) AddFieldError(field, key string, params ...interface{}) *Error {
+	s.fieldErrors = append(s.fieldErrors, FieldError{Field: field, Key: key, Params: params})
 	return s
 }
 
