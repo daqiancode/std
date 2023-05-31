@@ -1,83 +1,51 @@
 package std
 
 type FieldError struct {
-	Field  string
-	Key    string
-	Params []interface{}
+	Field   string
+	Message string
+	Key     string
+	Params  []interface{}
 }
 
-var DefaultErrorStatusCode = 500
-
-// Error i18n error
 type Error struct {
-	statusCode  int
-	err         error
-	key         string        // i18n key
-	params      []interface{} // i18n params
-	fieldErrors []FieldError  // request field errors
-	errorCode   string
+	Message     string
+	Key         string
+	Args        []interface{}
+	Err         error
+	FieldErrors []FieldError
+	ErrorCode   string
+	HttpStatus  int
 }
 
-func NewError(key string, params ...interface{}) *Error {
+func NewError(msg, key string, args ...interface{}) *Error {
 	return &Error{
-		key:    key,
-		params: params,
+		Message: msg,
+		Key:     key,
+		Args:    args,
 	}
 }
-func WrapError(err error, key string, params ...interface{}) *Error {
+func WrapError(err error, key string, args ...interface{}) *Error {
 	if e, ok := err.(*Error); ok {
 		return e
 	}
+	msg := ""
+	if err != nil {
+		msg = err.Error()
+	}
 	return &Error{
-		statusCode: DefaultErrorStatusCode,
-		err:        err,
-		key:        key,
-		params:     params,
+		Message: msg,
+		Err:     err,
+		Key:     key,
+		Args:    args,
 	}
 }
 
 func (s *Error) Error() string {
-	return s.key
+	return s.Message
 }
 
-func (s *Error) Key() string {
-	return s.key
-}
-
-func (s *Error) Params() []interface{} {
-	return s.params
-}
-func (s *Error) Cause() error {
-	return s.err
-}
-
-func (s *Error) SetStatusCode(statusCode int) *Error {
-	s.statusCode = statusCode
-	return s
-}
-func (s *Error) StatusCode() int {
-	return s.statusCode
-}
-
-func (s *Error) SetErrorCode(errorCode string) *Error {
-	s.errorCode = errorCode
-	return s
-}
-func (s *Error) ErrorCode() string {
-	return s.errorCode
-}
-
-func (s *Error) FieldErrors() []FieldError {
-	return s.fieldErrors
-}
-
-func (s *Error) AddFieldError(field, key string, params ...interface{}) *Error {
-	s.fieldErrors = append(s.fieldErrors, FieldError{Field: field, Key: key, Params: params})
-	return s
-}
-
-func (s *Error) AppendFieldError(fe FieldError) *Error {
-	s.fieldErrors = append(s.fieldErrors, fe)
+func (s *Error) AddFieldError(field, message, key string, params ...interface{}) *Error {
+	s.FieldErrors = append(s.FieldErrors, FieldError{Field: field, Message: message, Key: key, Params: params})
 	return s
 }
 
@@ -85,17 +53,25 @@ func (s *Error) ToResult(translator func(key string, params ...interface{}) stri
 	if s == nil {
 		return Result{}
 	}
-	fes := make(map[string]string, len(s.fieldErrors))
-	for _, v := range s.fieldErrors {
+	fes := make(map[string]string, len(s.FieldErrors))
+	for _, v := range s.FieldErrors {
 		if _, ok := fes[v.Field]; ok {
 			continue
 		}
-		fes[v.Field] = translator(v.Key, v.Params...)
+		if v.Key != "" {
+			fes[v.Field] = translator(v.Key, v.Params...)
+		} else {
+			fes[v.Field] = v.Message
+		}
+	}
+	errStr := s.Message
+	if s.Key != "" {
+		errStr = translator(s.Key, s.Args...)
 	}
 	r := Result{
 		State:       1,
-		Error:       translator(s.key, s.params...),
-		ErrorCode:   s.errorCode,
+		Error:       errStr,
+		ErrorCode:   s.ErrorCode,
 		FieldErrors: fes,
 	}
 
