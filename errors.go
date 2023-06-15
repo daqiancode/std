@@ -49,6 +49,19 @@ func (s *Error) AddFieldError(field, message, key string, params ...interface{})
 	return s
 }
 
+func (s *Error) SetError(err error) *Error {
+	s.Err = err
+	return s
+}
+func (s *Error) SetErrorCode(code string) *Error {
+	s.ErrorCode = code
+	return s
+}
+func (s *Error) SetHttpStatus(status int) *Error {
+	s.HttpStatus = status
+	return s
+}
+
 func (s *Error) ToResult(translator func(key string, params ...interface{}) string) Result {
 	if s == nil {
 		return Result{}
