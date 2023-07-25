@@ -24,6 +24,12 @@ func NewError(msg, key string, args ...interface{}) *Error {
 		Args:    args,
 	}
 }
+func Err(msg string) *Error {
+	return &Error{
+		Message: msg,
+	}
+}
+
 func WrapError(err error, key string, args ...interface{}) *Error {
 	if e, ok := err.(*Error); ok {
 		return e
@@ -46,6 +52,12 @@ func (s *Error) Error() string {
 
 func (s *Error) AddFieldError(field, message, key string, params ...interface{}) *Error {
 	s.FieldErrors = append(s.FieldErrors, FieldError{Field: field, Message: message, Key: key, Params: params})
+	return s
+}
+
+func (s *Error) I18n(key string, args ...interface{}) *Error {
+	s.Key = key
+	s.Args = args
 	return s
 }
 
