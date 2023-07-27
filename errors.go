@@ -54,7 +54,10 @@ func (s *Error) AddFieldError(field, message, key string, params ...interface{})
 	s.FieldErrors = append(s.FieldErrors, FieldError{Field: field, Message: message, Key: key, Params: params})
 	return s
 }
-
+func (s *Error) AddField(field, message string) *Error {
+	s.FieldErrors = append(s.FieldErrors, FieldError{Field: field, Message: message})
+	return s
+}
 func (s *Error) I18n(key string, args ...interface{}) *Error {
 	s.Key = key
 	s.Args = args
