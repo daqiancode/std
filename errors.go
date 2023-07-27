@@ -102,6 +102,5 @@ func (s *Error) ToResult(translator func(key string, params ...interface{}) stri
 		ErrorCode:   s.ErrorCode,
 		FieldErrors: fes,
 	}
-
 	return r
 }
